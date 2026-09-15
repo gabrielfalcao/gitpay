@@ -1,6 +1,10 @@
 import models from '../../models'
 
 const currentModels = models as any
+const userInclude = {
+  model: currentModels.User,
+  as: 'User'
+}
 
 type TransferSearchParams = {
   userId?: number
@@ -12,25 +16,13 @@ export async function transferSearch(params: TransferSearchParams = {}) {
   if (params.userId) {
     transfers = await currentModels.Transfer.findAll({
       where: { userId: params.userId },
-      include: [
-        currentModels.Task,
-        {
-          model: currentModels.User,
-          as: 'User'
-        }
-      ]
+      include: [currentModels.Task, userInclude]
     })
   }
   if (params.to) {
     transfers = await currentModels.Transfer.findAll({
       where: { to: params.to },
-      include: [
-        currentModels.Task,
-        {
-          model: currentModels.User,
-          as: 'User'
-        }
-      ]
+      include: [currentModels.Task, userInclude]
     })
   }
   return transfers

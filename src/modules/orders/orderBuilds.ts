@@ -76,7 +76,7 @@ export async function orderBuilds(orderParameters: OrderBuildsParams) {
   const orderCreated = await order.reload({
     include: [
       { model: currentModels.Task },
-      { model: currentModels.User },
+      { model: currentModels.User.scope('selfView') },
       {
         model: currentModels.Plan,
         include: [{ model: currentModels.PlanSchema }]

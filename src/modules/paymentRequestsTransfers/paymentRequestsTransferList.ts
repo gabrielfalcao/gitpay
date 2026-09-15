@@ -12,14 +12,7 @@ export async function paymentRequestTransferList({ userId }: PaymentRequestTrans
       userId: userId
     },
     order: [['createdAt', 'DESC']],
-    include: [
-      {
-        model: currentModels.User
-      },
-      {
-        model: currentModels.PaymentRequest
-      }
-    ]
+    include: [currentModels.User, currentModels.PaymentRequest]
   })
   return paymentRequestTransferList
 }

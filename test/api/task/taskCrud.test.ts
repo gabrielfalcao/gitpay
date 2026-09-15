@@ -4,7 +4,8 @@ import chai from 'chai'
 import api from '../../../src/server'
 import Models from '../../../src/models'
 import { registerAndLogin, register, login, truncateModels } from '../../helpers'
-import { TaskFactory } from '../../factories'
+import { TaskFactory, OrderFactory, AssignFactory, UserFactory } from '../../factories'
+import { USER_SENSITIVE_ATTRIBUTES } from '../../../src/queries/user/userSensitiveAttributes'
 import nock from 'nock'
 import secrets from '../../../src/config/secrets'
 import spies from 'chai-spies'
@@ -134,6 +135,26 @@ describe('Task CRUD', () => {
 
     expect(body.errors).to.exist
     expect(body.errors[0].message).to.equal('url must be unique')
+  })
+
+  it('should not update or leak a task the caller does not own', async () => {
+    const owner = await UserFactory({ name: 'Task Owner' })
+    const task = await TaskFactory({ userId: owner.id })
+
+    const attacker = await registerAndLogin(agent, { email: 'task_update_attacker@gitpay.me' })
+
+    const res = await agent
+      .put('/tasks/update')
+      .send({ id: task.id, value: 999, title: 'Hijacked title' })
+      .set('Authorization', attacker.headers.authorization)
+      .expect(200)
+
+    expect(res.body).to.not.have.property('User')
+    expect(res.body.value).to.not.equal('999')
+
+    const unchanged = await models.Task.findByPk(task.id)
+    expect(unchanged.dataValues.value).to.equal('100')
+    expect(unchanged.dataValues.title).to.equal('Sample Issue')
   })
 
   it('should give an error on create if the issue build responds with limit exceeded', async () => {
@@ -344,6 +365,34 @@ describe('Task CRUD', () => {
       expect(res.body.metadata.issue.url).to.equal(
         'https://api.github.com/repos/worknenjoy/gitpay/issues/1080'
       )
+    })
+
+    it('should not leak sensitive user fields for the task owner or nested order/assign users', async () => {
+      const owner = await UserFactory({ name: 'Task Owner' })
+      const orderPlacer = await UserFactory({ name: 'Order Placer' })
+      const assignee = await UserFactory({ name: 'Assignee' })
+
+      const task = await TaskFactory({
+        userId: owner.id,
+        private: true
+      })
+      await OrderFactory({ userId: orderPlacer.id, TaskId: task.id })
+      await AssignFactory({ userId: assignee.id, TaskId: task.id })
+
+      const res = await agent
+        .get(`/tasks/fetch/${task.id}`)
+        .expect('Content-Type', /json/)
+        .expect(200)
+
+      for (const field of USER_SENSITIVE_ATTRIBUTES) {
+        expect(res.body.User).to.not.have.property(field)
+        for (const order of res.body.Orders || []) {
+          expect(order.User).to.not.have.property(field)
+        }
+        for (const assign of res.body.Assigns || []) {
+          expect(assign.User).to.not.have.property(field)
+        }
+      }
     })
 
     it('should fetch task and not sync status in_progress on Gitpay and open on Github', async () => {

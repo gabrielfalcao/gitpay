@@ -133,7 +133,9 @@ export async function taskUpdate(taskParameters: any, notifyOnAssign: boolean = 
     include: [currentModels.User, currentModels.Order, currentModels.Offer, currentModels.Member]
   })
 
-  if (!data) {
+  // Model.update resolves to [affectedCount] (always a truthy array), so a mismatched
+  // userId in the where clause above silently updates 0 rows unless we check the count.
+  if (!data || !data[0]) {
     return new Error('task_updated_failed')
   }
 
@@ -150,7 +152,7 @@ export async function taskUpdate(taskParameters: any, notifyOnAssign: boolean = 
     const orderParameters = taskParameters.Orders
 
     if (order.userId) {
-      const user = await currentModels.User.findByPk(order.userId)
+      const user = await currentModels.User.scope('withSensitive').findByPk(order.userId)
 
       if (user && user.dataValues.customer_id) {
         const customer = await stripe.customers.retrieve(user.customer_id)

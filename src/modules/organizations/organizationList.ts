@@ -10,9 +10,7 @@ export async function organizationList(params?: any) {
           model: currentModels.Project,
           include: [currentModels.Organization]
         },
-        {
-          model: currentModels.User
-        }
+        currentModels.User
       ]
     })
     return data

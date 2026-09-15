@@ -5,6 +5,7 @@ const currentModels = models as any
 
 type OrderTransferParams = {
   id: number
+  userId?: number
 }
 
 type TransferData = {
@@ -22,6 +23,11 @@ export async function orderTransfer(
     })
 
     if (!order) throw new Error('no order found')
+
+    const isAuthorized =
+      order.userId === transferParams.userId ||
+      (order.Task && order.Task.userId === transferParams.userId)
+    if (!isAuthorized) throw new Error('not_authorized')
     if (transferParams.id && transferData.id) {
       const transferOrderId = transferParams.id
       const transferTaskId = transferData.id

@@ -8,6 +8,7 @@ import * as task from '../../../modules/tasks'
 import Sendmail from '../../../mail/mail'
 import UserMail from '../../../mail/user'
 import i18n from 'i18n'
+import { omitAuthSecrets } from '../../../queries/user/userSensitiveAttributes'
 
 const models = Models as any
 
@@ -49,7 +50,7 @@ export const register = async (req: any, res: any) => {
     }
     try {
       const data = await user.userBuilds(req.body)
-      res.send(data)
+      res.send(omitAuthSecrets(data, ['activation_token']))
     } catch (error: any) {
       // eslint-disable-next-line no-console
       console.log(error)
@@ -62,13 +63,21 @@ export const register = async (req: any, res: any) => {
   }
 }
 
+const RECOVER_PASSWORD_TOKEN_TTL_MS = 60 * 60 * 1000 // 60 minutes
+
 export const forgotPasswordNotification = async (req: any, res: any) => {
   const { email } = req.body
   try {
     const foundUser = await user.userExists({ email })
     if (foundUser.dataValues && foundUser.dataValues.email) {
       const token = models.User.generateToken()
-      await models.User.update({ recover_password_token: token }, { where: { email } })
+      await models.User.update(
+        {
+          recover_password_token: token,
+          recover_password_token_expires_at: new Date(Date.now() + RECOVER_PASSWORD_TOKEN_TTL_MS)
+        },
+        { where: { email } }
+      )
       const url = `${process.env.FRONTEND_HOST}/#/reset-password/${token}`
       i18n.setLocale(foundUser.dataValues.language || 'en')
       const html = i18n.__('mail.user.forgotPassword.message', {
@@ -95,14 +104,35 @@ export const forgotPasswordNotification = async (req: any, res: any) => {
 
 export const resetPassword = async (req: any, res: any) => {
   try {
-    const foundUser = await models.User.findOne({
+    const foundUser = await models.User.scope('withSensitive').findOne({
       where: { recover_password_token: req.body.token }
     })
-    if (!foundUser) res.status(401)
+    if (!foundUser) {
+      res.status(401).send({ message: 'user.password.reset.token.invalid' })
+      return
+    }
+
+    // Unlike activation_token (where a missing expiry is treated as not-expired,
+    // since every real row always has one set), a missing expiry here means expired:
+    // it retroactively invalidates every token issued before this expiry column
+    // existed, closing off any that may have been exposed by an earlier leak.
+    const { recover_password_token_expires_at } = foundUser.dataValues
+    const isExpired =
+      !recover_password_token_expires_at ||
+      new Date(recover_password_token_expires_at).getTime() < Date.now()
+    if (isExpired) {
+      res.status(401).send({ message: 'user.password.reset.token.expired' })
+      return
+    }
+
     const passwordHash = models.User.generateHash(req.body.password)
     if (passwordHash) {
       await models.User.update(
-        { password: passwordHash, recover_password_token: null },
+        {
+          password: passwordHash,
+          recover_password_token: null,
+          recover_password_token_expires_at: null
+        },
         { where: { id: foundUser.dataValues.id } }
       )
       res.send('successfully change password')
@@ -208,7 +238,9 @@ export const getActivationStatus = async (req: any, res: any) => {
 export const activateUser = async (req: any, res: any) => {
   const { token, userId } = req.query
   try {
-    const foundUser = await models.User.findOne({ where: { id: userId } })
+    // withSensitive: the token comparison below needs activation_token/_expires_at,
+    // which the lighter selfView scope (used for the response) excludes.
+    const foundUser = await models.User.scope('withSensitive').findOne({ where: { id: userId } })
     if (!foundUser) {
       // eslint-disable-next-line no-console
       console.log(`[activation] activate failed: no user for id ${userId}`)
@@ -219,7 +251,7 @@ export const activateUser = async (req: any, res: any) => {
     if (foundUser.dataValues.email_verified) {
       // eslint-disable-next-line no-console
       console.log(`[activation] activate no-op: user ${userId} already verified`)
-      res.send(foundUser)
+      res.send(omitAuthSecrets(foundUser))
       return
     }
 
@@ -240,6 +272,8 @@ export const activateUser = async (req: any, res: any) => {
       return
     }
 
+    // Model.update's RETURNING clause ignores Sequelize scopes (always `RETURNING *`),
+    // so omitAuthSecrets below is what actually keeps this response safe -- not a scope.
     const userUpdate = await models.User.update(
       {
         activation_token: null,
@@ -251,7 +285,7 @@ export const activateUser = async (req: any, res: any) => {
     )
     // eslint-disable-next-line no-console
     console.log(`[activation] activate success for user ${userId}`)
-    res.send(userUpdate[1])
+    res.send(omitAuthSecrets(userUpdate[1]))
   } catch (error: any) {
     // eslint-disable-next-line no-console
     console.log('[activation] activate error', error)
@@ -262,7 +296,7 @@ export const activateUser = async (req: any, res: any) => {
 export const resendActivationEmail = async (req: any, res: any) => {
   const { id: userId } = req.user
   try {
-    const foundUser = await models.User.findOne({ where: { id: userId } })
+    const foundUser = await models.User.scope('selfView').findOne({ where: { id: userId } })
     if (!foundUser) {
       res.status(401).send({ message: 'user.not.exist' })
       return
@@ -271,7 +305,7 @@ export const resendActivationEmail = async (req: any, res: any) => {
     if (foundUser.dataValues.email_verified) {
       // eslint-disable-next-line no-console
       console.log(`[activation] resend no-op: user ${userId} already verified`)
-      res.send(foundUser)
+      res.send(omitAuthSecrets(foundUser))
       return
     }
 
@@ -300,7 +334,7 @@ export const resendActivationEmail = async (req: any, res: any) => {
       console.log(`[activation] resend sent for user ${userId}`)
       UserMail.activation(userUpdate[1].dataValues, token)
     }
-    res.send(userUpdate[1])
+    res.send(omitAuthSecrets(userUpdate[1], ['activation_token']))
   } catch (error: any) {
     // eslint-disable-next-line no-console
     console.log('[activation] resend error', error)

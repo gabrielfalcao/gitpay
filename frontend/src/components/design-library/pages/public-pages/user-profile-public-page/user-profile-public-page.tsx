@@ -10,10 +10,163 @@ import {
   customColumnRenderer
 } from 'design-library/molecules/tables/issue-table/issue-table'
 import { FormattedMessage } from 'react-intl'
+import ContributorProfileVariant, {
+  ContributorProfileData
+} from './variants/contributor/contributor-profile-variant'
+import ServiceProviderProfileVariant, {
+  ServiceProviderProfileData
+} from './variants/provider/service-provider-profile-variant'
+import MaintainerProfileVariant, {
+  MaintainerProfileData
+} from './variants/maintainer/maintainer-profile-variant'
+import FundingProfileVariant, {
+  FundingProfileData
+} from './variants/funding/funding-profile-variant'
+import CombinedProfileVariant from './variants/combined/combined-profile-variant'
 
-const UserProfilePublicPage = ({ user, tasks, searchUser, serverSidePagination, onTabChange }) => {
+// Which role-based variant to render. A user can hold multiple roles at once
+// (contributor + maintainer, say) — hence an array. All four have real
+// variants now; holding 2+ renders the combined profile instead of a single one.
+export type ProfileType = 'contributor' | 'maintainer' | 'provider' | 'funding'
+
+type UserProfilePublicPageProps = {
+  user?: any
+  /** Pre-shaped data for the Contributor variant. Required when 2+ roles are
+   * active, since `user.data` can then only hold one shape at a time. */
+  contributorProfile?: ContributorProfileData
+  /** Pre-shaped data for the Maintainer variant — see `contributorProfile`. */
+  maintainerProfile?: MaintainerProfileData
+  /** Pre-shaped data for the Service Provider variant — see `contributorProfile`. */
+  providerProfile?: ServiceProviderProfileData
+  /** Pre-shaped data for the Funding variant — see `contributorProfile`. */
+  fundingProfile?: FundingProfileData
+  tasks?: any
+  pullRequests?: any
+  /** Maintainer's projects (`{data, completed}`), from `GET /projects/list?userId=`. */
+  maintainerProjects?: { data: any[]; completed: boolean }
+  /** Open bounties across the maintainer's projects' organization. */
+  maintainerOpenBounties?: any
+  /** Bounties this user funded (`{data, completed}`), from `GET /tasks/list?supportedByUserId=`. */
+  fundingBounties?: any
+  searchUser?: any
+  serverSidePagination?: any
+  onTabChange?: any
+  profileTypes?: ProfileType[]
+  onPayLink?: (link: any) => void
+  onViewBounty?: (bounty: any) => void
+  onBountyTabChange?: (value: string) => void
+  shareUrl?: string
+}
+
+const UserProfilePublicPage = ({
+  user,
+  contributorProfile,
+  maintainerProfile,
+  providerProfile,
+  fundingProfile,
+  tasks,
+  pullRequests,
+  maintainerProjects,
+  maintainerOpenBounties,
+  fundingBounties,
+  searchUser,
+  serverSidePagination,
+  onTabChange,
+  profileTypes = [],
+  onPayLink,
+  onViewBounty,
+  onBountyTabChange,
+  shareUrl
+}: UserProfilePublicPageProps) => {
   const { data: profile } = user || {}
   const issueMetadata = useIssueMetadata({ includeProject: true })
+  const isContributor = profileTypes.includes('contributor')
+  const isMaintainer = profileTypes.includes('maintainer')
+  const isProvider = profileTypes.includes('provider')
+  const isFunding = profileTypes.includes('funding')
+  const activeRoleCount = [isContributor, isMaintainer, isProvider, isFunding].filter(
+    Boolean
+  ).length
+
+  if (activeRoleCount >= 2) {
+    return (
+      <Page>
+        <CombinedProfileVariant
+          contributorProfile={contributorProfile}
+          maintainerProfile={maintainerProfile}
+          providerProfile={providerProfile}
+          fundingProfile={fundingProfile}
+          bounties={tasks}
+          pullRequests={pullRequests}
+          maintainerProjects={maintainerProjects}
+          maintainerOpenBounties={maintainerOpenBounties}
+          fundingBounties={fundingBounties}
+          completed={user?.completed}
+          onPayLink={onPayLink}
+          onViewBounty={onViewBounty}
+          onBountyTabChange={onBountyTabChange}
+          shareUrl={shareUrl}
+        />
+      </Page>
+    )
+  }
+
+  if (isContributor) {
+    return (
+      <Page>
+        <ContributorProfileVariant
+          profile={contributorProfile ?? profile}
+          bounties={tasks}
+          pullRequests={pullRequests}
+          completed={user?.completed}
+          onPayLink={onPayLink}
+          onViewBounty={onViewBounty}
+          onBountyTabChange={onBountyTabChange}
+          shareUrl={shareUrl}
+        />
+      </Page>
+    )
+  }
+
+  if (isMaintainer) {
+    return (
+      <Page>
+        <MaintainerProfileVariant
+          profile={maintainerProfile ?? profile}
+          projects={maintainerProjects ?? { data: [], completed: true }}
+          openBounties={maintainerOpenBounties ?? { data: [], completed: true }}
+          onViewBounty={onViewBounty}
+          shareUrl={shareUrl}
+        />
+      </Page>
+    )
+  }
+
+  if (isProvider) {
+    return (
+      <Page>
+        <ServiceProviderProfileVariant
+          profile={providerProfile ?? profile}
+          completed={user?.completed}
+          onPayLink={onPayLink}
+          shareUrl={shareUrl}
+        />
+      </Page>
+    )
+  }
+
+  if (isFunding) {
+    return (
+      <Page>
+        <FundingProfileVariant
+          profile={fundingProfile ?? profile}
+          bounties={fundingBounties ?? { data: [], completed: true }}
+          onViewBounty={onViewBounty}
+          shareUrl={shareUrl}
+        />
+      </Page>
+    )
+  }
 
   return (
     <React.Fragment>

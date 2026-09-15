@@ -7,7 +7,7 @@ const models = Models as any
 export async function orderDetails(orderParams: any) {
   try {
     const order = await models.Order.findOne({
-      where: { id: orderParams.id },
+      where: { id: orderParams.id, userId: orderParams.userId },
       include: models.User
     })
     let orderDetails = {}

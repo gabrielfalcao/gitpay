@@ -28,7 +28,7 @@ import logoWorknEnjoy from 'images/worknenjoy-logo.png'
 
 const Bottom = ({ info, getInfo }) => {
   const history = useHistory()
-  const { data, completed } = info
+  const { data, completed } = info || {}
   const {
     tasks,
     bounties,
