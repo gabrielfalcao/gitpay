@@ -10,10 +10,10 @@ export const createLocalStrategy = () => {
     try {
       const user = await userExists(userAttributes)
       if (!user) return done(null, false)
-      if (user.login_strategy && user.login_strategy !== 'local') return done(null, false)
-      if (user.verifyPassword && user.verifyPassword(password, user.password as string)) {
+      if (user?.login_strategy !== 'local') return done(null, false)
+      if (user?.verifyPassword(password, user.password as string)) {
         const token = jwt.sign(
-          { id: user.id, email: user.email },
+          { id: user.id, email: user.email, rememberMe: user.rememberMe },
           process.env.SECRET_PHRASE as string
         )
         user.token = token

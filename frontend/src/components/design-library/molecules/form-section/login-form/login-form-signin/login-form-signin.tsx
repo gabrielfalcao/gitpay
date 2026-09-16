@@ -50,8 +50,10 @@ const LoginFormSignin = ({
   }
 
   const handleRememberMe = () => {
-    const rememberMeJson = state.rememberMe;
-    console.log(`\x1b[1;38;2;240;79;120mrememberMe: \x1b[1;38;2;143;211;255m${rememberMeJson}\x1b[0m`)
+    const rememberMeJson = state.rememberMe
+    console.log(
+      `\x1b[1;38;2;240;79;120mrememberMe: \x1b[1;38;2;143;211;255m${rememberMeJson}\x1b[0m`
+    )
 
     setState({ ...state, rememberMe: !state.rememberMe })
   }
@@ -131,8 +133,8 @@ const LoginFormSignin = ({
     }
     const validEmail = validateEmail(state.username, state.error)
     const validPassword = validatePassword(state.password, state.error)
-    const rememberMe = state.rememberMe;
-    event.rememberMe = rememberMe;
+    const rememberMe = state.rememberMe
+    event.rememberMe = rememberMe
     if (!validEmail || !validPassword) {
       return event && event.preventDefault()
     }
