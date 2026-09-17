@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 
-import { Card, CardText } from '@mui/material'
+import { Card, CardContent } from '@mui/material'
 import Input from '../../common/form/inputAuth'
 
 const cardStyle = {
@@ -47,13 +47,13 @@ class Auth extends Component {
             <Input label="Password" name="password" type="password" value={this.state.password} />
           </div>
 
-          <CardText>
+          <CardContent>
             <a onClick={() => this.changeMode()}>
               {this.state.loginMode
                 ? 'New user? Register here!'
                 : 'Already registered? Come in here!'}
             </a>
-          </CardText>
+          </CardContent>
         </form>
       </Card>
     )
