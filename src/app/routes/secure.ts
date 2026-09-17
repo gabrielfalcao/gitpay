@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { userExists } from '../../modules/users'
 import type { Request, Response, NextFunction } from 'express'
-
+import { consoleDebugObject } from '../../utils'
 export default (req: Request, res: Response, next: NextFunction) => {
   // CORS preflight request
   if (req.method === 'OPTIONS') {
@@ -16,9 +16,11 @@ export default (req: Request, res: Response, next: NextFunction) => {
     if (!token) return res.status(403).send({ errors: ['No token provided'] })
 
     jwt.verify(token, process.env.SECRET_PHRASE as string, async (err: any, decoded: any) => {
-      if (err) return res.status(403).send({ errors: ['Failed to authenticate token'] })
+      if (err) {
+        return res.status(403).send({ errors: ['Failed to authenticate token'] })
+      }
       ;(req as any).decoded = decoded
-
+      consoleDebugObject('decoded', decoded)
       try {
         const user = await userExists(decoded)
         if (!user) {

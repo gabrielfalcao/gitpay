@@ -1,5 +1,6 @@
 import passportJWT from 'passport-jwt'
 import { userExists } from '../../modules/users'
+import { consoleDebugObject } from '../../utils'
 
 const ExtractJWT = passportJWT.ExtractJwt
 const JWTStrategy = passportJWT.Strategy
@@ -12,6 +13,7 @@ export const createJWTStrategy = () => {
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.SECRET_PHRASE
   }
+  consoleDebugObject('options', options)
   return new JWTStrategy(options, async (jwtPayload: any, done: any) => {
     try {
       const userAttributes = {

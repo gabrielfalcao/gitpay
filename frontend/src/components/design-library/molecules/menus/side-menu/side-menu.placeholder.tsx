@@ -21,25 +21,27 @@ const SidebarMenuPlaceholder: React.FC = () => {
             />
           </MenuItemStyled>
         </MenuItemSection>
-        {Array.from({ length: sections }).map((_, idx) => (
-          <MenuItemSection>
-            <Typography variant="caption">
-              <Skeleton variant="text" animation="wave" height={16} width={120} color="inherit" />
-            </Typography>
-            {widths.map((w, i) => (
-              <MenuItemStyled>
-                <Skeleton
-                  key={i}
-                  variant="text"
-                  animation="wave"
-                  height={24}
-                  width={`${w}%`}
-                  color="inherit"
-                />
-              </MenuItemStyled>
-            ))}
-          </MenuItemSection>
-        ))}
+        {Array.from({ length: sections }).map((_, idx) => {
+          return (
+            <MenuItemSection key={`menu-item-${idx}`}>
+              <Typography variant="caption">
+                <Skeleton variant="text" animation="wave" height={16} width={120} color="inherit" />
+              </Typography>
+              {widths.map((w, i) => (
+                <MenuItemStyled key={`menu-item-styled-${i}`}>
+                  <Skeleton
+                    key={i}
+                    variant="text"
+                    animation="wave"
+                    height={24}
+                    width={`${w}%`}
+                    color="inherit"
+                  />
+                </MenuItemStyled>
+              ))}
+            </MenuItemSection>
+          )
+        })}
       </MenuListStyled>
     </div>
   )
