@@ -1,4 +1,6 @@
 import React from 'react'
+import { Fragment } from 'react'
+
 import { Grid } from '@mui/system'
 import { List, ListItemIcon, ListItemText, Divider } from '@mui/material'
 import HeroTitle from 'design-library/atoms/typography/hero-title/hero-title'
@@ -44,13 +46,13 @@ const SecondaryHero = ({
           <SecList>
             <List>
               {items.map((item, index) => (
-                <>
-                  <ListItemTop>
+                <Fragment key={`fragment-${index}`}>
+                  <ListItemTop key={`list-item-top-${index}`}>
                     <ListItemIcon style={{ marginRight: 10 }}>{item.icon}</ListItemIcon>
                     <ListItemText primary={item.primaryText} secondary={item.secondaryText} />
                   </ListItemTop>
                   {index < items.length - 1 && <Divider />}
-                </>
+                </Fragment>
               ))}
             </List>
           </SecList>
