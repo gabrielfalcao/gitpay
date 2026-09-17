@@ -4,6 +4,7 @@ import userDisconnectGithub from '../../../modules/users/userDisconectGithub'
 import secrets from '../../../config/secrets'
 import passport from 'passport'
 import { omitAuthSecrets } from '../../../queries/user/userSensitiveAttributes'
+import { consoleDebugObject } from '../../../utils'
 
 export const changeEmail = async (req: any, res: any) => {
   const userId = req.user.id
@@ -78,18 +79,10 @@ export const connectGithub = (req: any, res: any, next: any) => {
 }
 
 export const authorizeLocal = (req: any, res: any, next: any) => {
-  const body = JSON.stringify(req.body, null, 2)
-  console.log(`\x1b[1;38;2;240;79;120mbody: \x1b[1;38;2;143;211;255m${body}\x1b[0m`)
-  const params = JSON.stringify(req.params, null, 2)
-  console.log(`\x1b[1;38;2;240;79;120mparams: \x1b[1;38;2;143;211;255m${params}\x1b[0m`)
-  const query = JSON.stringify(req.query, null, 2)
-  console.log(`\x1b[1;38;2;240;79;120mquery: \x1b[1;38;2;143;211;255m${query}\x1b[0m`)
-  const rememberMe = req.rememberMe
+  consoleDebugObject('request.body', req.body)
+  consoleDebugObject('request.user.token', req.user.token)
   if (req.user && req.user.token) {
     res.set('Authorization', 'Bearer ' + req.user.token)
-    if (rememberMe ?? false) {
-      res.setCookie('rememberMe', req.user.token)
-    }
     res.redirect(`${process.env.FRONTEND_HOST}/#/token/${req.user.token}`)
   }
 }

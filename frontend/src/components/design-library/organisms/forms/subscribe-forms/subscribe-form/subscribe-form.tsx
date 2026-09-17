@@ -35,6 +35,7 @@ type SubscribeFormProps = {
 const SubscribeForm = ({ type = 'subscribe-form', render }: SubscribeFormProps) => {
   const intl = useIntl()
   const formProps = {
+    url: 'gitpay.mailchimp.internal',
     action:
       '//truppie.us17.list-manage.com/subscribe/post?u=bb76ecd5ef5cbbc5e60701321&amp;id=63cbedd527',
     messages: {

@@ -4,6 +4,7 @@ import { Button, Typography } from '@mui/material'
 import ReCAPTCHA from 'react-google-recaptcha'
 import Checkbox from '@mui/material/Checkbox'
 import ProviderLoginButtons from '../../../../atoms/buttons/provider-login-buttons/provider-login-buttons'
+import { consoleDebugObject } from '../../../../../../utils'
 
 import api from '../../../../../../consts'
 import { Margins, Center, SpacedButton, StyledTextField } from './login-form-signin.styles'
@@ -48,16 +49,10 @@ const LoginFormSignin = ({
   const handleBlur = () => {
     // handle blur logic
   }
-
-  const handleRememberMe = () => {
-    const rememberMeJson = state.rememberMe
-    console.log(
-      `\x1b[1;38;2;240;79;120mrememberMe: \x1b[1;38;2;143;211;255m${rememberMeJson}\x1b[0m`
-    )
-
-    setState({ ...state, rememberMe: !state.rememberMe })
+  const handleRememberMe = (event) => {
+    consoleDebugObject('state.rememberMe', state.rememberMe)
+    setState({ ...state, rememberMe: event.target.checked })
   }
-
   const validateEmail = (email, currentErrors) => {
     if (email.length < 3) {
       setState({
@@ -133,11 +128,10 @@ const LoginFormSignin = ({
     }
     const validEmail = validateEmail(state.username, state.error)
     const validPassword = validatePassword(state.password, state.error)
-    const rememberMe = state.rememberMe
-    event.rememberMe = rememberMe
     if (!validEmail || !validPassword) {
       return event && event.preventDefault()
     }
+    consoleDebugObject('onSubmit', onSubmit)
     onSubmit?.(event)
   }
 

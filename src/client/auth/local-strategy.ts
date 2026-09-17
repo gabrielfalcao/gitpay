@@ -1,6 +1,7 @@
 import { Strategy as LocalStrategy } from 'passport-local'
 import jwt from 'jsonwebtoken'
 import { userExists } from '../../modules/users'
+import { thirdyDaysExpirationHuman } from './common'
 
 export const createLocalStrategy = () => {
   return new LocalStrategy(async function verify(username, password, done) {
@@ -13,8 +14,13 @@ export const createLocalStrategy = () => {
       if (user?.login_strategy !== 'local') return done(null, false)
       if (user?.verifyPassword(password, user.password as string)) {
         const token = jwt.sign(
-          { id: user.id, email: user.email, rememberMe: user.rememberMe },
-          process.env.SECRET_PHRASE as string
+          {
+            id: user.id,
+            email: user.email,
+            rememberMe: user.rememberMe
+          },
+          process.env.SECRET_PHRASE as string,
+          { expiresIn: thirdyDaysExpirationHuman }
         )
         user.token = token
         return done(null, user)
