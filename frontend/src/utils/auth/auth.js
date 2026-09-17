@@ -3,12 +3,12 @@ import React, { Component } from 'react'
 import { Card, CardContent } from '@mui/material'
 import Input from '../../common/form/inputAuth'
 
-const cardStyle = {
+export const cardStyle = {
   minWidth: 275,
   position: 'relative'
 }
 
-class Auth extends Component {
+export class Auth extends Component {
   constructor(props) {
     super(props)
 

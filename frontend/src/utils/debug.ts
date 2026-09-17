@@ -33,7 +33,7 @@ export const formatDebugObject = (name: string, obj: any, indent: number = 2): s
 
 export const consoleDebugObject = (name: string, obj: any, indent: number = 2) => {
   const style =
-    'font-weight: bold; padding: 4px; border-radius: 4px; font-size: 20px; font-family: Monaco, Monospace'
+    'background-color: #FFFFFF; font-weight: bold; padding: 4px; border-radius: 4px; font-size: 20px; font-family: Monaco, Monospace'
   const formatted = formatDebugObject(name, obj, indent)
 
   console.log(`%c${formatted}`, style)
