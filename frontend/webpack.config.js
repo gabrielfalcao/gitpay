@@ -14,7 +14,7 @@ module.exports = {
   node: {
     global: true
   },
-  devtool: 'source-map',
+  devtool: 'eval-source-map',
   mode: 'development',
   entry: './src/index.js',
   output: {
