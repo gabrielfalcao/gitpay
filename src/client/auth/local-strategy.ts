@@ -1,7 +1,7 @@
 import { Strategy as LocalStrategy } from 'passport-local'
 import jwt from 'jsonwebtoken'
 import { userExists } from '../../modules/users'
-import { thirdyDaysExpirationHuman, jwtExpiresIn as expiresIn } from './common'
+import { thirdyDaysExpirationHuman } from './common'
 import { consoleDebugObject } from '../../utils'
 
 export const createLocalStrategy = () => {
@@ -21,7 +21,7 @@ export const createLocalStrategy = () => {
             rememberMe: user.rememberMe
           },
           process.env.SECRET_PHRASE as string,
-          { expiresIn: thirdyDaysExpirationHuman }
+          user?.rememberMe == "on" ? { expiresIn: thirdyDaysExpirationHuman } : null
         )
         user.token = token
         consoleDebugObject(token)
