@@ -4,7 +4,6 @@ import userDisconnectGithub from '../../../modules/users/userDisconectGithub'
 import secrets from '../../../config/secrets'
 import passport from 'passport'
 import { omitAuthSecrets } from '../../../queries/user/userSensitiveAttributes'
-import { consoleDebugObject } from '../../../utils'
 
 export const changeEmail = async (req: any, res: any) => {
   const userId = req.user.id

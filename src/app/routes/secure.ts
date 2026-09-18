@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { userExists } from '../../modules/users'
 import type { Request, Response, NextFunction } from 'express'
-import { consoleDebugObject } from '../../utils'
 export default (req: Request, res: Response, next: NextFunction) => {
   // CORS preflight request
   if (req.method === 'OPTIONS') {

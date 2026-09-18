@@ -1,6 +1,5 @@
 import passportJWT from 'passport-jwt'
 import { userExists } from '../../modules/users'
-import { consoleDebugObject } from '../../utils'
 
 const ExtractJWT = passportJWT.ExtractJwt
 const JWTStrategy = passportJWT.Strategy

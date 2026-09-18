@@ -7,7 +7,6 @@ import { Request, Response, NextFunction } from 'express'
 import { userExists } from '../../modules/users'
 import { userTasks } from '../../modules/users'
 import jwt, { VerifyErrors, JwtPayload } from 'jsonwebtoken'
-import { consoleDebugObject } from '../../utils'
 function isAuthOrRedirect(req: Request, res: Response, next: NextFunction): void {
   if (req.isAuthenticated()) return next()
 

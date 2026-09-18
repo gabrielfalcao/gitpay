@@ -4,7 +4,6 @@ import { Button, Typography } from '@mui/material'
 import ReCAPTCHA from 'react-google-recaptcha'
 import Checkbox from '@mui/material/Checkbox'
 import ProviderLoginButtons from '../../../../atoms/buttons/provider-login-buttons/provider-login-buttons'
-import { consoleDebugObject } from '../../../../../../utils'
 
 import api from '../../../../../../consts'
 import { Margins, Center, SpacedButton, StyledTextField } from './login-form-signin.styles'
