@@ -50,7 +50,6 @@ const LoginFormSignin = ({
     // handle blur logic
   }
   const handleRememberMe = (event) => {
-    consoleDebugObject('state.rememberMe', state.rememberMe)
     setState({ ...state, rememberMe: event.target.checked })
   }
   const validateEmail = (email, currentErrors) => {
@@ -131,7 +130,6 @@ const LoginFormSignin = ({
     if (!validEmail || !validPassword) {
       return event && event.preventDefault()
     }
-    consoleDebugObject('onSubmit', onSubmit)
     onSubmit?.(event)
   }
 

@@ -13,7 +13,6 @@ export const createJWTStrategy = () => {
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.SECRET_PHRASE
   }
-  consoleDebugObject('options', options)
   return new JWTStrategy(options, async (jwtPayload: any, done: any) => {
     try {
       const userAttributes = {

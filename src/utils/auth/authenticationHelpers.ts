@@ -36,7 +36,6 @@ function isAuth(req: Request, res: Response, next: NextFunction): void {
         }
 
         const userData = decoded as any
-        consoleDebugObject('userData', userData)
         // check if a user exists
         userExists(userData)
           .then((user: any) => {

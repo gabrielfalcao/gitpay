@@ -20,7 +20,6 @@ export default (req: Request, res: Response, next: NextFunction) => {
         return res.status(403).send({ errors: ['Failed to authenticate token'] })
       }
       ;(req as any).decoded = decoded
-      consoleDebugObject('decoded', decoded)
       try {
         const user = await userExists(decoded)
         if (!user) {

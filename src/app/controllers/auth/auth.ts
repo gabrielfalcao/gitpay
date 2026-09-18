@@ -79,8 +79,6 @@ export const connectGithub = (req: any, res: any, next: any) => {
 }
 
 export const authorizeLocal = (req: any, res: any, next: any) => {
-  consoleDebugObject('request.body', req.body)
-  consoleDebugObject('request.user.token', req.user.token)
   if (req.user && req.user.token) {
     res.set('Authorization', 'Bearer ' + req.user.token)
     res.redirect(`${process.env.FRONTEND_HOST}/#/token/${req.user.token}`)

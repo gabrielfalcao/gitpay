@@ -21,10 +21,9 @@ export const createLocalStrategy = () => {
             rememberMe: user.rememberMe
           },
           process.env.SECRET_PHRASE as string,
-          user?.rememberMe == "on" ? { expiresIn: thirdyDaysExpirationHuman } : null
+          user?.rememberMe == 'on' ? { expiresIn: thirdyDaysExpirationHuman } : null
         )
         user.token = token
-        consoleDebugObject(token)
         return done(null, user)
       }
       return done(null, false)
