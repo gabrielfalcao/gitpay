@@ -58,7 +58,7 @@ export const createBitbucketStrategy = () => {
             const token = jwt.sign(
               { id: data.id, email: data.email },
               process.env.SECRET_PHRASE as string,
-              { expiresIn: '30d' }
+              user?.rememberMe == 'on' ? { expiresIn: thirdyDaysExpirationHuman } : undefined
             )
             data.token = token
             return done(null, data)
